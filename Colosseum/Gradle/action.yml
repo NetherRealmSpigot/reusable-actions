@@ -5,6 +5,10 @@ inputs:
   build-ref:
     description: Ref
     required: true
+  java-version:
+    description: Java version
+    required: false
+    default: "8"
   java-distribution:
     description: Java distribution
     required: false
@@ -35,7 +39,7 @@ runs:
 
     - uses: actions/setup-java@v4
       with:
-        java-version: "8"
+        java-version: ${{ inputs.java-version }}
         distribution: ${{ inputs.java-distribution }}
 
     - uses: gradle/actions/setup-gradle@v3
