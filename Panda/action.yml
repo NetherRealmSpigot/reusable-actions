@@ -39,7 +39,7 @@ runs:
         distribution: ${{ inputs.java-distribution }}
         cache: "gradle"
 
-    - uses: gradle/actions/setup-gradle@v3
+    - uses: gradle/actions/setup-gradle@v4
 
     - run: |
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
