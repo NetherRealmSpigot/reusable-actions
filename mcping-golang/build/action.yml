@@ -1,0 +1,71 @@
+name: mcping-golang build
+description: mcping-golang build
+
+inputs:
+  build-ref:
+    description: Ref
+    required: true
+  golang-version:
+    description: Golang version
+    required: true
+  suffix:
+    description: suffix
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: "NetherRealmSpigot/mcping-golang"
+        ref: ${{ inputs.build-ref }}
+        fetch-depth: 0
+
+    - name: Setup go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.golang-version }}
+
+    - name: Build
+      run: make build
+      shell: bash
+
+    - name: Test
+      run: make test
+      shell: bash
+    
+    - name: Run
+      if: ${{ runner.os != 'Windows' }}
+      run: chmod +x ./mcping
+      shell: bash
+    
+    - name: Run
+      env: 
+        EXECUTABLE_SUFFIX: ${{ runner.os == 'Windows'  && '.exe' || '' }}
+      run: |
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --version
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --host mc.hypixel.net --protocol 770 --verbose
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --host play.cubecraft.net --protocol 770
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --host rebellious.nekoli.dev --protocol 769
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --host skyfactory.craftersland.net --protocol 3
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --host skyfactory.craftersland.net --protocol 4
+        ./mcping${{ env.EXECUTABLE_SUFFIX }} --host skyfactory.craftersland.net --protocol 5
+      shell: bash
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      env: 
+        EXECUTABLE_SUFFIX: ${{ runner.os == 'Windows'  && '.exe' || '' }}
+      with:
+        name: mcping-golang-${{ runner.os }}-${{ github.run_id }}-${{ inputs.suffix }}
+        path: ./mcping${{ env.EXECUTABLE_SUFFIX }}
+        retention-days: 1
+        overwrite: true
+      continue-on-error: true
+    
+    - name: Clean
+      run: make clean
+      shell: bash
+      if: ${{ always() }}
+      continue-on-error: true
