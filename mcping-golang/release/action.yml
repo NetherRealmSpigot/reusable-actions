@@ -1,0 +1,36 @@
+name: mcping-golang build
+description: mcping-golang build
+
+inputs:
+  tag-ref:
+    description: Ref
+    required: true
+  golang-version:
+    description: Golang version
+    required: true
+  token:
+    description: token
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: "NetherRealmSpigot/mcping-golang"
+        ref: ${{ inputs.tag-ref }}
+        fetch-depth: 0
+
+    - name: Setup go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.golang-version }}
+    
+    - name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        version: latest
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
