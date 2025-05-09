@@ -1,0 +1,55 @@
+name: Paper
+description: Paper
+
+inputs:
+  build-ref:
+    description: Ref
+    required: true
+  java-distribution:
+    description: Java distribution
+    required: false
+    default: "temurin"
+  artifact-retention-days:
+    description: Jar artifact retention days
+    required: false
+    default: "1"
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: "NetherRealmSpigot/Paper188"
+        ref: ${{ inputs.build-ref }}
+        fetch-depth: 0
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: "8"
+        distribution: "${{ inputs.java-distribution }}"
+    
+    - name: Setup Maven
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: 3.9.9
+    
+    - name: Build
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        ./build.sh
+        mkdir -p out
+        cp PaperSpigot-Server/target/paperspigot-*-SNAPSHOT.jar out/
+        cp PaperSpigot-API/target/paperspigot-api-*-SNAPSHOT.jar out/
+      shell: bash
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Paper-${{ github.run_id }}
+        path: out/*
+        retention-days: ${{ inputs.artifact-retention-days }}
+        overwrite: true
+      continue-on-error: true
